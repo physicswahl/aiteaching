@@ -1,0 +1,53 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Transition{% endblock %}
+
+{% block heading %}Second Recap{% endblock %}
+
+{% block previous_url %}{% url 'demo:ocr_image' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:word_vectors' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>Concepts</h2>
+        <ul>
+            <li>Classification is separating objects into distinct classes</li>
+            <li>Classification can be done with neural nets</li>  
+            <li>Neural nets train to find the best combination of weights</li>        
+            <li>Neural nets can solve more complex classifications than models (and can still be trained to do so)</li>        
+            <li>Neural nets can be applied to many types of classification problems</li>        
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>Terms</h2>
+        <ul>
+            <li>Classification</li>
+            <li>Neural net</li>
+            <li>Neuron</li>
+            <li>Input/Output</li>
+            <li>Weights</li>
+            <li>Weights / Likelihood</li>
+            <li>Hidden Layer</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block extra_content %}
+    <div class="container">
+        <div style="background: #e9ecef; border-radius: 8px; padding: 20px; margin-top: 30px;">
+            <h2 style="margin-top: 0; color: #555; font-size: 23px; margin-bottom: 20px;">Classification vs Similarity</h2>
+            <p style="font-size: 18px; line-height: 1.6; color: #333;">
+                Classification looks at how to decide if things are different. Similarity looks at how to decide if things are similar. 
+            </p>
+            <p style="font-size: 18px; line-height: 1.6; color: #333;">
+                For example: Does this word have a similar meaning to this other word (yes, we're going to look at ChatGPT (LLM))
+            </p>
+        </div>
+    </div>
+{% endblock %}

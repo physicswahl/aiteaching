@@ -1,0 +1,50 @@
+{% extends "demo/base_two_pane.html" %}
+{% load static %}
+
+{% block title %}Large Language Models{% endblock %}
+
+{% block heading %}Large Language Models{% endblock %}
+
+{% block previous_url %}{% url 'demo:anthropic' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:conclusions_two' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block next_button %}
+<button class="nav-button" onclick="repeatVideo()" style="cursor: pointer; border: none; margin-right: 10px;">Repeat</button>
+<a href="{% url 'demo:conclusions_two' %}" class="nav-button">Next →</a>
+{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px; display: flex; flex-direction: column; align-items: center;">
+        <video id="mainVideo" controls autoplay style="max-width: 100%; height: auto; border-radius: 5px;">
+            <source src="{% static 'demo/llm_animation.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>How do they know what word to write next?</h2>
+        <ul>
+            <li>Neural net based</li>
+            <li>Inputs are the previous words in the sentence</li>  
+            <li>... and all "concepts" from the conversation (similarity)</li>        
+            <li>Picks out the most likely next word (classification / likelihood)</li>
+            <li>That word now becomes an input to the next iteration</li>
+            <li>Etc etc...</li>                 
+        </ul>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function repeatVideo() {
+    const video = document.getElementById('mainVideo');
+    video.currentTime = 0;
+    video.play();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,766 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Five Node Neural Network{% endblock %}
+
+{% block heading %}Five Node Neural Network (2-2-1){% endblock %}
+
+{% block previous_url %}{% url 'demo:two_nodes' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'species:network_visualization' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block extra_style %}
+        .network-container {
+            margin: 0 0 20px 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .weight-groups {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .weight-group {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .weight-group h3 {
+            margin-top: 0;
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+{% endblock %}
+
+{% block left_pane %}
+    <canvas id="plotCanvas" width="550" height="550"></canvas>
+    
+    <div class="legend" style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; font-size: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #3498db; border: 2px solid #333;"></div>
+            <span>Eligible for Support</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #e74c3c; border: 2px solid #333;"></div>
+            <span>Not Eligible</span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div class="network-container">
+        <canvas id="networkCanvas" width="600" height="300"></canvas>
+    </div>
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <div style="font-size: 18px; font-weight: bold;">Model Accuracy</div>
+        <div style="text-align: right;">
+            <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">
+                <span id="accuracy">0%</span>
+            </div>
+            <div style="font-size: 14px; color: #7f8c8d;">
+                <span id="correct-count">0</span> correct, 
+                <span id="incorrect-count">0</span> incorrect 
+                (<span id="total-count">0</span> total)
+            </div>
+        </div>
+    </div>
+    
+    <h2>Network Parameters</h2>
+            
+            <div class="weight-groups">
+                <div class="weight-group">
+                    <h3>Input → Hidden Layer</h3>
+                    <div class="slider-row">
+                        <label>Weight (x₁→h₁):</label>
+                        <input type="range" id="w11" min="-5" max="5" step="0.1" value="2.0">
+                        <span class="value" id="w11-value">2.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Weight (x₂→h₁):</label>
+                        <input type="range" id="w21" min="-5" max="5" step="0.1" value="2.0">
+                        <span class="value" id="w21-value">2.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Weight (x₁→h₂):</label>
+                        <input type="range" id="w12" min="-5" max="5" step="0.1" value="5.0">
+                        <span class="value" id="w12-value">5.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Weight (x₂→h₂):</label>
+                        <input type="range" id="w22" min="-5" max="5" step="0.1" value="-2.0">
+                        <span class="value" id="w22-value">-2.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Bias h₁:</label>
+                        <input type="range" id="b1" min="-20" max="0" step="0.1" value="-15.7">
+                        <span class="value" id="b1-value">-15.7</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Bias h₂:</label>
+                        <input type="range" id="b2" min="-20" max="0" step="0.1" value="-0.3">
+                        <span class="value" id="b2-value">-0.3</span>
+                    </div>
+                </div>
+                
+                <div class="weight-group">
+                    <h3>Hidden → Output Layer</h3>
+                    <div class="slider-row">
+                        <label>Weight (h₁→y):</label>
+                        <input type="range" id="wo1" min="-5" max="5" step="0.1" value="3.0">
+                        <span class="value" id="wo1-value">3.0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Weight (h₂→y):</label>
+                        <input type="range" id="wo2" min="-5" max="5" step="0.1" value="2.4">
+                        <span class="value" id="wo2-value">2.4</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Bias output:</label>
+                        <input type="range" id="bo" min="-5" max="0" step="0.1" value="-2.9">
+                        <span class="value" id="bo-value">-2.9</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get canvases and contexts
+        const networkCanvas = document.getElementById('networkCanvas');
+        const networkCtx = networkCanvas.getContext('2d');
+        const plotCanvas = document.getElementById('plotCanvas');
+        const plotCtx = plotCanvas.getContext('2d');
+        
+        // Student data from backend
+        const students = {{ students_json|safe }};
+        
+        // Network parameters
+        let w11 = 2.0, w21 = 2.0, w12 = 5.0, w22 = -2.0; // input to hidden
+        let b1 = -15.7, b2 = -0.3; // hidden biases
+        let wo1 = 3.0, wo2 = 2.4; // hidden to output
+        let bo = -2.9; // output bias
+        
+        // Get all sliders
+        const sliders = {
+            w11: document.getElementById('w11'),
+            w21: document.getElementById('w21'),
+            w12: document.getElementById('w12'),
+            w22: document.getElementById('w22'),
+            b1: document.getElementById('b1'),
+            b2: document.getElementById('b2'),
+            wo1: document.getElementById('wo1'),
+            wo2: document.getElementById('wo2'),
+            bo: document.getElementById('bo')
+        };
+        
+        let updateTimeout = null;
+        let isSliding = false;
+        
+        // Update function
+        function updateParameters(forceComplete = false) {
+            w11 = parseFloat(sliders.w11.value);
+            w21 = parseFloat(sliders.w21.value);
+            w12 = parseFloat(sliders.w12.value);
+            w22 = parseFloat(sliders.w22.value);
+            b1 = parseFloat(sliders.b1.value);
+            b2 = parseFloat(sliders.b2.value);
+            wo1 = parseFloat(sliders.wo1.value);
+            wo2 = parseFloat(sliders.wo2.value);
+            bo = parseFloat(sliders.bo.value);
+            
+            document.getElementById('w11-value').textContent = w11.toFixed(1);
+            document.getElementById('w21-value').textContent = w21.toFixed(1);
+            document.getElementById('w12-value').textContent = w12.toFixed(1);
+            document.getElementById('w22-value').textContent = w22.toFixed(1);
+            document.getElementById('b1-value').textContent = b1.toFixed(1);
+            document.getElementById('b2-value').textContent = b2.toFixed(1);
+            document.getElementById('wo1-value').textContent = wo1.toFixed(1);
+            document.getElementById('wo2-value').textContent = wo2.toFixed(1);
+            document.getElementById('bo-value').textContent = bo.toFixed(1);
+            
+            drawNetwork();
+            
+            if (forceComplete || !isSliding) {
+                // Full quality render
+                drawPlot();
+            } else {
+                // Lower quality render during sliding
+                drawPlotFast();
+            }
+            
+            calculateAccuracy();
+        }
+        
+        function handleSliderInput() {
+            isSliding = true;
+            updateParameters(false);
+        }
+        
+        function handleSliderChange() {
+            isSliding = false;
+            // Clear any pending timeout
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+            // Schedule final complete render
+            updateTimeout = setTimeout(() => {
+                updateParameters(true);
+            }, 50);
+        }
+        
+        // Add event listeners
+        Object.values(sliders).forEach(slider => {
+            slider.addEventListener('input', handleSliderInput);
+            slider.addEventListener('change', handleSliderChange);
+        });
+        
+        // ReLU activation function
+        function relu(x) {
+            return Math.max(0, x);
+        }
+        
+        // Sigmoid activation function
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+        
+        // Neural network forward pass
+        function compute(x1, x2) {
+            // Hidden layer with sigmoid (creates smoother curves)
+            const h1 = sigmoid(w11 * x1 + w21 * x2 + b1);
+            const h2 = sigmoid(w12 * x1 + w22 * x2 + b2);
+            
+            // Output layer with sigmoid
+            const z = wo1 * h1 + wo2 * h2 + bo;
+            const y = sigmoid(z);
+            
+            // Return classification: > 0.5 is positive class
+            return y > 0.5 ? 1 : -1;
+        }
+        
+        // Draw mini activation graph for input neurons (static)
+        function drawMiniGraph(ctx, x, y, size, isX1, inputLabel) {
+            const miniPadding = 5;
+            const graphSize = size - 2 * miniPadding;
+            
+            // Draw background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(x, y, size, size);
+            
+            // Draw border
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, size, size);
+            
+            if (isX1) {
+                // x1: Vertical classifier - left blue, right red
+                ctx.fillStyle = 'rgb(52, 152, 219)';
+                ctx.fillRect(x + miniPadding, y + miniPadding, graphSize / 2, graphSize);
+                
+                ctx.fillStyle = 'rgb(231, 76, 60)';
+                ctx.fillRect(x + miniPadding + graphSize / 2, y + miniPadding, graphSize / 2, graphSize);
+                
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + miniPadding + graphSize / 2, y + miniPadding);
+                ctx.lineTo(x + miniPadding + graphSize / 2, y + miniPadding + graphSize);
+                ctx.stroke();
+            } else {
+                // x2: Horizontal classifier - bottom blue, top red
+                ctx.fillStyle = 'rgb(52, 152, 219)';
+                ctx.fillRect(x + miniPadding, y + miniPadding + graphSize / 2, graphSize, graphSize / 2);
+                
+                ctx.fillStyle = 'rgb(231, 76, 60)';
+                ctx.fillRect(x + miniPadding, y + miniPadding, graphSize, graphSize / 2);
+                
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + miniPadding, y + miniPadding + graphSize / 2);
+                ctx.lineTo(x + miniPadding + graphSize, y + miniPadding + graphSize / 2);
+                ctx.stroke();
+            }
+            
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(inputLabel, x + size / 2, y + size + 12);
+        }
+        
+        // Draw hidden layer activation graph (dynamic)
+        function drawHiddenGraph(ctx, x, y, size, w1, w2, bias, label) {
+            const miniPadding = 5;
+            const graphSize = size - 2 * miniPadding;
+            
+            // Draw background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(x, y, size, size);
+            
+            // Draw border
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, size, size);
+            
+            // Draw activation regions
+            const resolution = 2;
+            for (let py = 0; py < graphSize; py += resolution) {
+                for (let px = 0; px < graphSize; px += resolution) {
+                    const x1 = (px / graphSize) * 10;
+                    const x2 = (1 - py / graphSize) * 10;
+                    
+                    // Calculate hidden neuron activation
+                    const z = w1 * x1 + w2 * x2 + bias;
+                    const h = sigmoid(z);
+                    
+                    // Color based on activation (blue for low, red for high)
+                    if (h > 0.5) {
+                        ctx.fillStyle = 'rgb(231, 76, 60)';
+                    } else {
+                        ctx.fillStyle = 'rgb(52, 152, 219)';
+                    }
+                    
+                    ctx.fillRect(x + miniPadding + px, y + miniPadding + py, resolution, resolution);
+                }
+            }
+            
+            // Draw decision boundary
+            if (Math.abs(w2) > 0.01) {
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                const x1Start = 0;
+                const x2Start = -(w1 * x1Start + bias) / w2;
+                const x1End = 10;
+                const x2End = -(w1 * x1End + bias) / w2;
+                
+                const pxStart = (x1Start / 10) * graphSize;
+                const pyStart = (1 - x2Start / 10) * graphSize;
+                const pxEnd = (x1End / 10) * graphSize;
+                const pyEnd = (1 - x2End / 10) * graphSize;
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(x + miniPadding, y + miniPadding, graphSize, graphSize);
+                ctx.clip();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + miniPadding + pxStart, y + miniPadding + pyStart);
+                ctx.lineTo(x + miniPadding + pxEnd, y + miniPadding + pyEnd);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + size / 2, y + size + 12);
+        }
+        
+        // Draw output layer activation graph (dynamic)
+        function drawOutputGraph(ctx, x, y, size, label) {
+            const miniPadding = 5;
+            const graphSize = size - 2 * miniPadding;
+            
+            // Draw background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(x, y, size, size);
+            
+            // Draw border
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, size, size);
+            
+            // Draw classification regions
+            const resolution = 2;
+            for (let py = 0; py < graphSize; py += resolution) {
+                for (let px = 0; px < graphSize; px += resolution) {
+                    const x1 = (px / graphSize) * 10;
+                    const x2 = (1 - py / graphSize) * 10;
+                    
+                    // Calculate full network output
+                    const h1 = sigmoid(w11 * x1 + w21 * x2 + b1);
+                    const h2 = sigmoid(w12 * x1 + w22 * x2 + b2);
+                    const z = wo1 * h1 + wo2 * h2 + bo;
+                    const y_out = sigmoid(z);
+                    
+                    // Color based on classification
+                    if (y_out > 0.5) {
+                        ctx.fillStyle = 'rgb(231, 76, 60)'; // Not eligible
+                    } else {
+                        ctx.fillStyle = 'rgb(52, 152, 219)'; // Eligible
+                    }
+                    
+                    ctx.fillRect(x + miniPadding + px, y + miniPadding + py, resolution, resolution);
+                }
+            }
+            
+            // Label
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + size / 2, y + size + 12);
+        }
+        
+        // Draw neural network
+        function drawNetwork() {
+            networkCtx.clearRect(0, 0, networkCanvas.width, networkCanvas.height);
+            
+            // Positions
+            const inputX = 80;
+            const hiddenX = 250;
+            const outputX = 420;
+            const input1Y = 120;
+            const input2Y = 230;
+            const hidden1Y = 120;
+            const hidden2Y = 230;
+            const outputY = 175;
+            const radius = 25;
+            
+            // Draw connections with weights
+            networkCtx.strokeStyle = '#999';
+            networkCtx.lineWidth = 2;
+            networkCtx.fillStyle = '#333';
+            networkCtx.font = 'bold 11px Arial';
+            networkCtx.textAlign = 'center';
+            
+            // Input to hidden connections
+            const connections = [
+                {x1: inputX, y1: input1Y, x2: hiddenX, y2: hidden1Y, w: w11, label: 'w11'},
+                {x1: inputX, y1: input2Y, x2: hiddenX, y2: hidden1Y, w: w21, label: 'w21'},
+                {x1: inputX, y1: input1Y, x2: hiddenX, y2: hidden2Y, w: w12, label: 'w12'},
+                {x1: inputX, y1: input2Y, x2: hiddenX, y2: hidden2Y, w: w22, label: 'w22'},
+                {x1: hiddenX, y1: hidden1Y, x2: outputX, y2: outputY, w: wo1, label: 'wo1'},
+                {x1: hiddenX, y1: hidden2Y, x2: outputX, y2: outputY, w: wo2, label: 'wo2'}
+            ];
+            
+            connections.forEach(conn => {
+                networkCtx.beginPath();
+                networkCtx.moveTo(conn.x1 + radius, conn.y1);
+                networkCtx.lineTo(conn.x2 - radius, conn.y2);
+                networkCtx.stroke();
+                
+                const midX = (conn.x1 + conn.x2) / 2;
+                const midY = (conn.y1 + conn.y2) / 2;
+                networkCtx.fillText(conn.w.toFixed(1), midX, midY - 5);
+            });
+            
+            // Draw neurons
+            function drawNeuron(x, y, label, color) {
+                networkCtx.fillStyle = color;
+                networkCtx.beginPath();
+                networkCtx.arc(x, y, radius, 0, Math.PI * 2);
+                networkCtx.fill();
+                networkCtx.strokeStyle = '#2980b9';
+                networkCtx.lineWidth = 3;
+                networkCtx.stroke();
+                
+                networkCtx.fillStyle = 'white';
+                networkCtx.font = 'bold 14px Arial';
+                networkCtx.textAlign = 'center';
+                networkCtx.fillText(label, x, y + 5);
+            }
+            
+            // Input neurons
+            drawNeuron(inputX, input1Y, 'x₁', '#3498db');
+            drawNeuron(inputX, input2Y, 'x₂', '#3498db');
+            
+            // Hidden neurons
+            drawNeuron(hiddenX, hidden1Y, 'h₁', '#f39c12');
+            drawNeuron(hiddenX, hidden2Y, 'h₂', '#f39c12');
+            
+            // Output neuron
+            drawNeuron(outputX, outputY, 'y', '#e74c3c');
+            
+            // Bias labels
+            networkCtx.fillStyle = '#333';
+            networkCtx.font = 'bold 11px Arial';
+            networkCtx.fillText(`b=${b1.toFixed(1)}`, hiddenX, hidden1Y + 45);
+            networkCtx.fillText(`b=${b2.toFixed(1)}`, hiddenX, hidden2Y + 45);
+            networkCtx.fillText(`b=${bo.toFixed(1)}`, outputX, outputY + 45);
+            
+            // Layer labels
+            networkCtx.fillStyle = '#555';
+            networkCtx.font = 'bold 12px Arial';
+            networkCtx.fillText('Input', inputX, 310);
+            networkCtx.fillText('Hidden', hiddenX, 310);
+            networkCtx.fillText('Output', outputX, 310);
+            
+            // Draw mini-graphs
+            const miniSize = 60;
+            
+            // Input layer mini-graphs (static)
+            drawMiniGraph(networkCtx, inputX - miniSize - 10, input1Y - miniSize / 2, miniSize, true, 'x₁');
+            drawMiniGraph(networkCtx, inputX - miniSize - 10, input2Y - miniSize / 2, miniSize, false, 'x₂');
+            
+            // Hidden layer mini-graphs (dynamic)
+            drawHiddenGraph(networkCtx, hiddenX + radius + 10, hidden1Y - miniSize / 2, miniSize, w11, w21, b1, 'h₁');
+            drawHiddenGraph(networkCtx, hiddenX + radius + 10, hidden2Y - miniSize / 2, miniSize, w12, w22, b2, 'h₂');
+            
+            // Output layer mini-graph (dynamic)
+            drawOutputGraph(networkCtx, outputX + radius + 10, outputY - miniSize / 2, miniSize, 'y');
+        }
+        
+        // Coordinate transformation functions
+        function xToCanvas(x) {
+            return (x / 10) * plotCanvas.width;
+        }
+        
+        function yToCanvas(y) {
+            return plotCanvas.height - (y / 10) * plotCanvas.height;
+        }
+        
+        // Calculate accuracy
+        function calculateAccuracy() {
+            let correct = 0;
+            let incorrect = 0;
+            
+            students.forEach(student => {
+                const x1 = student.math_performance;
+                const x2 = student.reading_writing_performance;
+                
+                // Get model prediction
+                const h1 = sigmoid(w11 * x1 + w21 * x2 + b1);
+                const h2 = sigmoid(w12 * x1 + w22 * x2 + b2);
+                const z = wo1 * h1 + wo2 * h2 + bo;
+                const output = sigmoid(z);
+                const predictedEligible = output <= 0.5;
+                
+                // Actual classification
+                const actualEligible = student.eligible_for_support;
+                
+                if (predictedEligible === actualEligible) {
+                    correct++;
+                } else {
+                    incorrect++;
+                }
+            });
+            
+            const total = students.length;
+            const percentage = total > 0 ? ((correct / total) * 100).toFixed(1) : 0;
+            
+            document.getElementById('accuracy').textContent = `${percentage}%`;
+            document.getElementById('correct-count').textContent = correct;
+            document.getElementById('incorrect-count').textContent = incorrect;
+            document.getElementById('total-count').textContent = total;
+        }
+        
+        // Draw students on plot
+        function drawStudents() {
+            students.forEach(student => {
+                const x = xToCanvas(student.math_performance);
+                const y = yToCanvas(student.reading_writing_performance);
+                
+                plotCtx.beginPath();
+                plotCtx.arc(x, y, 6, 0, Math.PI * 2);
+                
+                if (student.eligible_for_support) {
+                    plotCtx.fillStyle = '#3498db'; // Blue for eligible
+                } else {
+                    plotCtx.fillStyle = '#e74c3c'; // Red for not eligible
+                }
+                
+                plotCtx.fill();
+                plotCtx.strokeStyle = '#333';
+                plotCtx.lineWidth = 2;
+                plotCtx.stroke();
+            });
+        }
+        
+        // Fast drawing during slider drag (lower resolution)
+        function drawPlotFast() {
+            const width = plotCanvas.width;
+            const height = plotCanvas.height;
+            const resolution = 8; // Larger pixels for faster rendering
+            
+            // Input ranges - purely positive
+            const x1Min = 0, x1Max = 10;
+            const x2Min = 0, x2Max = 10;
+            
+            // Clear canvas
+            plotCtx.clearRect(0, 0, width, height);
+            
+            // Draw colored surface with lower resolution
+            for (let py = 0; py < height; py += resolution) {
+                for (let px = 0; px < width; px += resolution) {
+                    const x1 = x1Min + (px / width) * (x1Max - x1Min);
+                    const x2 = x2Max - (py / height) * (x2Max - x2Min);
+                    const output = compute(x1, x2);
+                    
+                    // Binary classification: blue if negative (eligible), red if positive (not eligible)
+                    if (output > 0) {
+                        plotCtx.fillStyle = 'rgba(231, 76, 60, 0.3)'; // Red - not eligible
+                    } else {
+                        plotCtx.fillStyle = 'rgba(52, 152, 219, 0.3)'; // Blue - eligible
+                    }
+                    
+                    plotCtx.fillRect(px, py, resolution, resolution);
+                }
+            }
+            
+            // Draw grid lines
+            plotCtx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+            plotCtx.lineWidth = 1;
+            
+            for (let i = 0; i <= 10; i++) {
+                const x = (width / 10) * i;
+                plotCtx.beginPath();
+                plotCtx.moveTo(x, 0);
+                plotCtx.lineTo(x, height);
+                plotCtx.stroke();
+                
+                const y = (height / 10) * i;
+                plotCtx.beginPath();
+                plotCtx.moveTo(0, y);
+                plotCtx.lineTo(width, y);
+                plotCtx.stroke();
+            }
+            
+            // Draw axes
+            plotCtx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+            plotCtx.lineWidth = 2;
+            
+            // x-axis (bottom edge, x2 = 0)
+            plotCtx.beginPath();
+            plotCtx.moveTo(0, height);
+            plotCtx.lineTo(width, height);
+            plotCtx.stroke();
+            
+            // y-axis (left edge, x1 = 0)
+            plotCtx.beginPath();
+            plotCtx.moveTo(0, 0);
+            plotCtx.lineTo(0, height);
+            plotCtx.stroke();
+            
+            // Axis labels
+            plotCtx.fillStyle = 'black';
+            plotCtx.font = 'bold 14px Arial';
+            plotCtx.textAlign = 'center';
+            plotCtx.fillText('x₁ (Math)', width / 2, height - 10);
+            
+            plotCtx.save();
+            plotCtx.translate(15, height / 2);
+            plotCtx.rotate(-Math.PI / 2);
+            plotCtx.fillText('x₂ (Reading)', 0, 0);
+            plotCtx.restore();
+            
+            // Draw students on top of the surface
+            drawStudents();
+        }
+        
+        // Draw decision surface and students
+        function drawPlot() {
+            const width = plotCanvas.width;
+            const height = plotCanvas.height;
+            const resolution = 2;
+            
+            // Input ranges - purely positive
+            const x1Min = 0, x1Max = 10;
+            const x2Min = 0, x2Max = 10;
+            
+            // Clear canvas
+            plotCtx.clearRect(0, 0, width, height);
+            
+            // Compute outputs
+            const outputs = [];
+            for (let py = 0; py < height; py += resolution) {
+                outputs[py] = [];
+                for (let px = 0; px < width; px += resolution) {
+                    const x1 = x1Min + (px / width) * (x1Max - x1Min);
+                    const x2 = x2Max - (py / height) * (x2Max - x2Min);
+                    const output = compute(x1, x2);
+                    outputs[py][px] = output;
+                }
+            }
+            
+            // Draw colored surface
+            for (let py = 0; py < height; py += resolution) {
+                for (let px = 0; px < width; px += resolution) {
+                    const output = outputs[py][px];
+                    
+                    // Binary classification: blue if negative (eligible), red if positive (not eligible)
+                    if (output > 0) {
+                        plotCtx.fillStyle = 'rgba(231, 76, 60, 0.3)'; // Red - not eligible
+                    } else {
+                        plotCtx.fillStyle = 'rgba(52, 152, 219, 0.3)'; // Blue - eligible
+                    }
+                    
+                    plotCtx.fillRect(px, py, resolution, resolution);
+                }
+            }
+            
+            // Draw grid lines
+            plotCtx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+            plotCtx.lineWidth = 1;
+            
+            for (let i = 0; i <= 10; i++) {
+                const x = (width / 10) * i;
+                plotCtx.beginPath();
+                plotCtx.moveTo(x, 0);
+                plotCtx.lineTo(x, height);
+                plotCtx.stroke();
+                
+                const y = (height / 10) * i;
+                plotCtx.beginPath();
+                plotCtx.moveTo(0, y);
+                plotCtx.lineTo(width, y);
+                plotCtx.stroke();
+            }
+            
+            // Draw axes
+            plotCtx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+            plotCtx.lineWidth = 2;
+            
+            // x-axis (bottom edge, x2 = 0)
+            plotCtx.beginPath();
+            plotCtx.moveTo(0, height);
+            plotCtx.lineTo(width, height);
+            plotCtx.stroke();
+            
+            // y-axis (left edge, x1 = 0)
+            plotCtx.beginPath();
+            plotCtx.moveTo(0, 0);
+            plotCtx.lineTo(0, height);
+            plotCtx.stroke();
+            
+            // Axis labels
+            plotCtx.fillStyle = 'black';
+            plotCtx.font = 'bold 14px Arial';
+            plotCtx.textAlign = 'center';
+            plotCtx.fillText('x₁ (Math)', width / 2, height - 10);
+            
+            plotCtx.save();
+            plotCtx.translate(15, height / 2);
+            plotCtx.rotate(-Math.PI / 2);
+            plotCtx.fillText('x₂ (Reading)', 0, 0);
+            plotCtx.restore();
+            
+            // Draw students on top of the surface
+            drawStudents();
+        }
+        
+        // Initial draw
+        updateParameters();
+    </script>
+{% endblock %}

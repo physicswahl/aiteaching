@@ -1,0 +1,34 @@
+{% extends "demo/base_single_pane.html" %}
+{% load static %}
+
+{% block title %}Anthropic{% endblock %}
+
+{% block heading %}Anthropic{% endblock %}
+
+{% block previous_url %}{% url 'demo:word_vectors' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:llm' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block extra_style %}
+    .image-container {
+        position: relative;
+        width: 75%;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+    
+    img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="image-container">
+        <img src="{% static 'demo/anthropic.png' %}" alt="Anthropic">
+    </div>
+{% endblock %}

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Demo{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .canvas-container {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 18px;
+            min-width: 0;
+        }
+        
+        .controls-panel {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 18px;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        .controls-panel h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 23px;
+            margin-bottom: 20px;
+        }
+        
+        .canvas-container h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 23px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .slider-row label {
+            min-width: 100px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .slider-row input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+        
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .slider-row .value {
+            min-width: 60px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button.active {
+            background: #e74c3c;
+        }
+        
+        .equation {
+            background: #d6dce3;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 10px;
+            color: #333;
+        }
+        
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-nav h1 {
+            margin: 0;
+            flex: 0 0 auto;
+        }
+        
+        .nav-left, .nav-right {
+            flex: 1;
+        }
+        
+        .nav-left {
+            text-align: left;
+        }
+        
+        .nav-right {
+            text-align: right;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .nav-button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .nav-button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .nav-button.invisible {
+            visibility: hidden;
+        }
+        
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-nav">
+            <div class="nav-left">
+                {% block previous_button %}
+                <a href="{% block previous_url %}#{% endblock %}" class="nav-button {% block previous_class %}invisible{% endblock %}">← Previous</a>
+                {% endblock %}
+            </div>
+            
+            <h1>{% block heading %}Demo{% endblock %}</h1>
+            
+            <div class="nav-right">
+                {% block next_button %}
+                <a href="{% block next_url %}#{% endblock %}" class="nav-button {% block next_class %}invisible{% endblock %}">Next →</a>
+                {% endblock %}
+            </div>
+        </div>
+        
+        <div class="layout">
+            <div class="canvas-container">
+                {% block left_pane %}{% endblock %}
+            </div>
+            
+            <div class="controls-panel">
+                {% block right_pane %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    {% block extra_content %}{% endblock %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

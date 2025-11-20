@@ -1,0 +1,33 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Teaching{% endblock %}
+
+{% block heading %}Teaching{% endblock %}
+
+{% block previous_url %}{% url 'demo:conclusions_two' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}#{% endblock %}
+{% block next_class %}invisible{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>Terms</h2>
+        <ul>
+            <li>Classification</li>
+            <li>Neural net / Neurons / Weights / Hidden Layer</li>
+            <li>Likelihood (Probability)</li>
+            <li>Vectors</li>
+            <li>Encoding</li>
+            <li>Similarity (Geometry)</li>
+            <li>Gradient</li>            
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>Teaching - How do we bring AI notions into the classroom</h2>
+        <p>Content for Teaching page - right pane</p>
+    </div>
+{% endblock %}

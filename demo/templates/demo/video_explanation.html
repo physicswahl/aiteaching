@@ -1,0 +1,69 @@
+{% extends "demo/base_single_pane.html" %}
+{% load static %}
+
+{% block title %}Neural Network Explained{% endblock %}
+
+{% block heading %}How Neural Networks Work{% endblock %}
+
+{% block previous_url %}{% url 'demo:two_nodes' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:conclusions_one' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block next_button %}
+<button class="nav-button" onclick="repeatVideo()" style="cursor: pointer; border: none; margin-right: 10px;">Repeat</button>
+<a href="{% url 'demo:conclusions_one' %}" class="nav-button">Next →</a>
+{% endblock %}
+
+{% block extra_style %}
+    .video-container {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    video {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .video-description {
+        margin-top: 30px;
+        font-size: 18px;
+        line-height: 1.6;
+        color: #333;
+    }
+    
+    .video-description h2 {
+        font-size: 23px;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+    
+    .video-description p {
+        margin-bottom: 15px;
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="video-container">
+        <video id="mainVideo" controls autoplay>
+            <source src="{% static 'demo/matthew_walker.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function repeatVideo() {
+    const video = document.getElementById('mainVideo');
+    video.currentTime = 0;
+    video.play();
+}
+</script>
+{% endblock %}

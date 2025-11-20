@@ -1,0 +1,59 @@
+{% extends "demo/base_single_pane.html" %}
+{% load static %}
+
+{% block title %}Word Embeddings{% endblock %}
+
+{% block heading %}Understanding Word Embeddings{% endblock %}
+
+{% block previous_url %}{% url 'demo:transition' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:anthropic' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block next_button %}
+<button class="nav-button" onclick="repeatVideo()" style="cursor: pointer; border: none; margin-right: 10px;">Repeat</button>
+<a href="{% url 'demo:anthropic' %}" class="nav-button">Next →</a>
+{% endblock %}
+
+{% block extra_style %}
+    .word-vectors-content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        align-items: center;
+    }
+    
+    .video-section {
+        width: 75%;
+        max-width: 750px;
+    }
+    
+    .video-section video {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="word-vectors-content">
+        <div class="video-section">
+            <video id="mainVideo" controls autoplay>
+                <source src="{% static 'demo/word_vectors.mp4' %}?v=2" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function repeatVideo() {
+    const video = document.getElementById('mainVideo');
+    video.currentTime = 0;
+    video.play();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Training{% endblock %}
+
+{% block heading %}Training{% endblock %}
+
+{% block previous_url %}{% url 'demo:llm' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:conclusions_two' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>The training loop</h2>
+        <ul>
+            <li>Input random weights into the neural net</li>
+            <li>Look at the outputs, and see how well the match your training data</li>  
+            <li>Change the weights, and cal</li>                     
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>Right Content</h2>
+        <p>Content for Training page - right pane</p>
+    </div>
+{% endblock %}

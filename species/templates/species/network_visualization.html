@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Visualization - Species Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .species-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .species-selector label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .species-selector select {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .species-selector select:hover {
+            border-color: #667eea;
+        }
+        
+        .species-selector button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .species-selector button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .species-selector button:active {
+            transform: translateY(0);
+        }
+        
+        .network-container {
+            position: relative;
+            min-height: 600px;
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+        
+        .species-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .info-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .info-card p {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .prediction-result {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .prediction-result.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .prediction-result h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .prediction-result .threatened {
+            color: #dc3545;
+        }
+        
+        .prediction-result .safe {
+            color: #28a745;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 40px;
+            background: #e9ecef;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .step-controls {
+            display: none !important;
+        }
+        
+        .step-controls button {
+            padding: 10px 25px;
+            margin: 0 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .step-controls button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .step-controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step-info {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .neuron-value {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Neural Network Species Classifier</h1>
+        <p class="subtitle">Predicting Endangered Status using AI</p>
+        
+        <div class="control-panel">
+            <div class="species-selector">
+                <label for="species-select">Select a Species:</label>
+                <select id="species-select" onchange="analyzeSpecies()">
+                    <option value="">-- Choose a species --</option>
+                    {% for species in species_list %}
+                    <option value="{{ species.id }}">{{ species.animal_name }} ({{ species.get_status_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div id="species-info" class="species-info" style="display: none;"></div>
+        
+        <div class="network-container">
+            <canvas id="networkCanvas" width="1200" height="600"></canvas>
+            <div id="neuron-tooltip" class="neuron-value"></div>
+        </div>
+        
+        <div id="prediction-result" class="prediction-result"></div>
+        <div id="error-message" class="error"></div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let currentPrediction = null;
+        let currentStep = 0;
+        let maxSteps = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let neuronPositions = []; // Store neuron positions for hover
+        
+        // Animation steps: 0=ready, 1=input, 2=hidden1, 3=hidden2, 4=output
+        const stepDescriptions = [
+            'Ready - Click Next to start',
+            'Input Layer - Species features loaded',
+            'Hidden Layer 1 - Processing features (16 neurons)',
+            'Hidden Layer 2 - Deeper analysis (8 neurons)',
+            'Output - Final prediction'
+        ];
+        
+        // Network structure
+        const network = {
+            layers: [
+                { neurons: 3, label: 'Input Layer', x: 100 },
+                { neurons: 16, label: 'Hidden Layer 1', x: 400 },
+                { neurons: 8, label: 'Hidden Layer 2', x: 700 },
+                { neurons: 5, label: 'Output Layer\n(CR/EN/VU/NT/LC)', x: 1000 }
+            ],
+            inputLabels: ['Population Size', 'Decline Rate', 'Fragmented'],
+            outputLabels: ['CR', 'EN', 'VU', 'NT', 'LC']
+        };
+        
+        function drawNeuron(x, y, radius, color, opacity = 1, activation = null) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            
+            // Color intensity based on activation
+            if (activation !== null) {
+                const intensity = Math.min(Math.abs(activation) * 0.5 + 0.3, 1);
+                opacity = intensity;
+                
+                // Color based on activation sign
+                if (activation > 0) {
+                    color = activation > 0.5 ? '#28a745' : '#ffc107';
+                } else if (activation < 0) {
+                    color = '#dc3545';
+                }
+            }
+            
+            ctx.fillStyle = color;
+            ctx.globalAlpha = opacity;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw activation value if provided
+            if (activation !== null && Math.abs(activation) > 0.01) {
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(activation.toFixed(2), x, y + 3);
+            }
+        }
+        
+        function drawConnection(x1, y1, x2, y2, opacity = 0.2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = `rgba(100, 100, 100, ${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        function drawNetwork(activations = null, activeLayer = -1) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            neuronPositions = []; // Reset positions
+            
+            // Draw connections first (dimmed if not active)
+            for (let l = 0; l < network.layers.length - 1; l++) {
+                const layer1 = network.layers[l];
+                const layer2 = network.layers[l + 1];
+                
+                const spacing1 = 500 / (layer1.neurons + 1);
+                const spacing2 = 500 / (layer2.neurons + 1);
+                
+                const isActive = activeLayer >= l + 1;
+                const opacity = isActive ? 0.3 : 0.1;
+                
+                for (let i = 0; i < layer1.neurons; i++) {
+                    const y1 = 100 + spacing1 * (i + 1);
+                    
+                    for (let j = 0; j < layer2.neurons; j++) {
+                        const y2 = 100 + spacing2 * (j + 1);
+                        drawConnection(layer1.x, y1, layer2.x, y2, opacity);
+                    }
+                }
+            }
+            
+            // Draw neurons with activations
+            network.layers.forEach((layer, layerIndex) => {
+                const spacing = 500 / (layer.neurons + 1);
+                const positions = [];
+                
+                // For output layer, find the predicted class (highest activation)
+                let predictedIdx = -1;
+                if (layerIndex === network.layers.length - 1 && activations && activations[layerIndex]) {
+                    predictedIdx = activations[layerIndex].indexOf(Math.max(...activations[layerIndex]));
+                    console.log('Output layer activations:', activations[layerIndex]);
+                    console.log('Predicted index:', predictedIdx);
+                }
+                
+                for (let i = 0; i < layer.neurons; i++) {
+                    const y = 100 + spacing * (i + 1);
+                    let color = '#3498db';
+                    let opacity = 0.3;
+                    let activation = null;
+                    let isWinner = false;
+                    
+                    // Show activation if this layer is active
+                    if (activations && layerIndex <= activeLayer && activations[layerIndex]) {
+                        activation = activations[layerIndex][Math.min(i, activations[layerIndex].length - 1)];
+                        
+                        if (layerIndex === 0) color = '#3498db';
+                        else if (layerIndex === network.layers.length - 1) {
+                            // Output layer - highlight the winner
+                            if (i === predictedIdx && activeLayer >= layerIndex) {
+                                color = '#28a745';  // Bright green for winner
+                                isWinner = true;
+                                console.log('Winner neuron:', i, 'activation:', activation);
+                            } else {
+                                color = '#e74c3c';
+                            }
+                        }
+                        else color = '#f39c12';
+                    }
+                    
+                    // Make winner neuron larger and add glow effect
+                    const radius = isWinner ? 20 : 15;
+                    
+                    // Draw glow for winner
+                    if (isWinner) {
+                        ctx.beginPath();
+                        ctx.arc(layer.x, y, radius + 8, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(40, 167, 69, 0.3)';
+                        ctx.fill();
+                    }
+                    
+                    drawNeuron(layer.x, y, radius, color, opacity, activation);
+                    positions.push({ x: layer.x, y: y, activation: activation, isWinner: isWinner });
+                }
+                
+                neuronPositions.push(positions);
+                
+                // Draw layer label
+                ctx.fillStyle = layerIndex === activeLayer ? '#667eea' : '#333';
+                ctx.font = layerIndex === activeLayer ? 'bold 16px Arial' : 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(layer.label, layer.x, 70);
+                
+                // Draw input labels
+                if (layerIndex === 0 && activeLayer >= 0) {
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'right';
+                    positions.forEach((pos, i) => {
+                        ctx.fillStyle = '#333';
+                        ctx.fillText(network.inputLabels[i], pos.x - 25, pos.y + 5);
+                    });
+                }
+                
+                // Draw output labels
+                if (layerIndex === network.layers.length - 1 && activeLayer >= network.layers.length - 1) {
+                    console.log('Drawing output labels, positions:', positions);
+                    positions.forEach((pos, i) => {
+                        const isWinner = pos.isWinner;
+                        console.log('Label', i, 'isWinner:', isWinner);
+                        
+                        // Winner label is bigger and green
+                        ctx.font = isWinner ? 'bold 16px Arial' : 'bold 12px Arial';
+                        ctx.fillStyle = isWinner ? '#28a745' : '#333';
+                        ctx.textAlign = 'left';
+                        
+                        // Add a checkmark for winner
+                        const labelText = isWinner ? '✓ ' + network.outputLabels[i] : network.outputLabels[i];
+                        ctx.fillText(labelText, pos.x + 28, pos.y + 5);
+                        
+                        // Draw box around winner label
+                        if (isWinner) {
+                            const metrics = ctx.measureText(labelText);
+                            ctx.strokeStyle = '#28a745';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(pos.x + 25, pos.y - 10, metrics.width + 6, 20);
+                        }
+                    });
+                }
+            });
+        }
+        
+        async function analyzeSpecies() {
+            const select = document.getElementById('species-select');
+            const speciesId = select.value;
+            
+            console.log('Analyzing species ID:', speciesId);
+            
+            if (!speciesId) {
+                showError('Please select a species');
+                return;
+            }
+            
+            hideError();
+            document.getElementById('prediction-result').classList.remove('show');
+            
+            try {
+                console.log('Fetching prediction...');
+                const response = await fetch(`/predict/${speciesId}/`);
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!response.ok) {
+                    showError(data.error || 'An error occurred');
+                    return;
+                }
+                
+                currentPrediction = data;
+                
+                try {
+                    displaySpeciesInfo(data);
+                    // Draw the final network state with all weights visible
+                    const activations = currentPrediction.layer_outputs.map(layer => layer.values);
+                    // Show final state (all layers active)
+                    drawNetwork(activations, activations.length - 1);
+                    displayPrediction(data);
+                } catch (err) {
+                    console.error('Error in display functions:', err);
+                    showError('Display error: ' + err.message);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to connect to server: ' + error.message);
+            }
+        }
+        
+        function nextStep() {
+            if (currentStep < maxSteps) {
+                currentStep++;
+                updateStepDisplay();
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        }
+        
+        function resetAnimation() {
+            stopAutoPlay();
+            currentStep = 0;
+            updateStepDisplay();
+        }
+        
+        function autoPlay() {
+            if (isPlaying) {
+                stopAutoPlay();
+            } else {
+                isPlaying = true;
+                document.getElementById('play-btn').textContent = '⏸ Pause';
+                playInterval = setInterval(() => {
+                    if (currentStep < maxSteps) {
+                        nextStep();
+                    } else {
+                        stopAutoPlay();
+                    }
+                }, 1500);
+            }
+        }
+        
+        function stopAutoPlay() {
+            isPlaying = false;
+            document.getElementById('play-btn').textContent = '▶ Auto Play';
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+        
+        function updateStepDisplay() {
+            if (!currentPrediction) {
+                drawNetwork();
+                return;
+            }
+            
+            // Update step info
+            document.getElementById('step-info').textContent = 
+                `Step ${currentStep}/${maxSteps}: ${stepDescriptions[currentStep]}`;
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep === maxSteps;
+            
+            // Draw network with current step highlighted
+            const activations = currentPrediction.layer_outputs.map(layer => layer.values);
+            console.log('All activations:', activations);
+            console.log('Number of layers in network:', network.layers.length);
+            drawNetwork(activations, currentStep - 1); // -1 because step 0 is "ready"
+        }
+        
+        function displaySpeciesInfo(data) {
+            const infoDiv = document.getElementById('species-info');
+            infoDiv.style.display = 'grid';
+            infoDiv.innerHTML = `
+                <div class="info-card">
+                    <h3>Species</h3>
+                    <p>${data.species_name}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Population Size</h3>
+                    <p>${Number(data.features.pop_size).toLocaleString()}</p>
+                </div>
+                <div class="info-card">
+                    <h3>Decline Rate</h3>
+                    <p>${data.features.decline_rate}%</p>
+                </div>
+                <div class="info-card">
+                    <h3>Habitat Fragmented</h3>
+                    <p>${data.features.fragmented}</p>
+                </div>
+            `;
+        }
+        
+        function displayPrediction(data) {
+            const resultDiv = document.getElementById('prediction-result');
+            const predictedStatus = data.predicted_status;
+            const confidence = (data.confidence * 100).toFixed(1);
+            
+            // Get threat level based on status
+            const threatLevels = {
+                'CR': { name: 'Critically Endangered', class: 'threatened', color: '#dc3545' },
+                'EN': { name: 'Endangered', class: 'threatened', color: '#fd7e14' },
+                'VU': { name: 'Vulnerable', class: 'threatened', color: '#ffc107' },
+                'NT': { name: 'Near Threatened', class: 'safe', color: '#17a2b8' },
+                'LC': { name: 'Least Concern', class: 'safe', color: '#28a745' }
+            };
+            
+            const threat = threatLevels[predictedStatus];
+            
+            // Build probability bars HTML
+            const probBars = Object.entries(data.class_probabilities)
+                .map(([status, prob]) => {
+                    const percentage = (prob * 100).toFixed(1);
+                    const statusInfo = threatLevels[status];
+                    return `
+                        <div style="margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>${status} - ${statusInfo.name}</strong>
+                                <span>${percentage}%</span>
+                            </div>
+                            <div style="background: #e9ecef; border-radius: 10px; overflow: hidden; height: 20px;">
+                                <div style="background: ${statusInfo.color}; width: ${percentage}%; height: 100%; transition: width 1s ease-out;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            
+            resultDiv.innerHTML = `
+                <h2 class="${threat.class}" style="color: ${threat.color}">
+                    Predicted: ${predictedStatus} - ${threat.name}
+                </h2>
+                <p style="font-size: 1.2em; color: #666; margin-bottom: 20px;">
+                    Actual Status: <strong>${data.status}</strong> ${data.status === predictedStatus ? '✓' : '✗'}
+                </p>
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Class Probabilities:</h3>
+                ${probBars}
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').classList.remove('show');
+        }
+        
+        // Initialize with empty network
+        drawNetwork();
+    </script>
+</body>
+</html>

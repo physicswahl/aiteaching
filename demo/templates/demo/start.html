@@ -1,0 +1,31 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Start{% endblock %}
+
+{% block heading %}An Introduction to Artificial Intelligence{% endblock %}
+
+{% block next_url %}{% url 'demo:student_plot' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>Objectives</h2>
+        <ul>
+            <li>Explore how to incoporate the teaching/discussion of AI concepts in the class</li>
+            <li>Learn some basic AI concepts</li>         
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>What You'll Learn</h2>
+        <ul>
+            <li>Classification</li>
+            <li>What is a neural net</li>
+            <li>Similarity</li>
+            <li>What is a token</li>
+            <li>How does ChatGPT work</li>
+        </ul>
+    </div>
+{% endblock %}

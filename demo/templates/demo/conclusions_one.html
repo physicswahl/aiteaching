@@ -1,0 +1,36 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Conclusions Part 1{% endblock %}
+
+{% block heading %}First Recap{% endblock %}
+
+{% block previous_url %}{% url 'demo:video_explanation' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:five_nodes' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>Concepts</h2>
+        <ul>
+            <li>Classification is separating objects into distinct classes</li>
+            <li>We can express classifications with models</li>         
+            <li>We can express classifications with neural nets</li>  
+            <li>Neural nets can be trained to find the weights that give the best classification</li>        
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>Terms</h2>
+        <ul>
+            <li>Classification</li>
+            <li>Neural net</li>
+            <li>Input</li>
+            <li>Weight</li>
+            <li>Output</li>
+        </ul>
+    </div>
+{% endblock %}

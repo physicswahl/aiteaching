@@ -1,0 +1,41 @@
+{% extends "demo/base_two_pane.html" %}
+
+{% block title %}Conclusions Two{% endblock %}
+
+{% block heading %}Conclusions{% endblock %}
+
+{% block previous_url %}{% url 'demo:llm' %}{% endblock %}
+{% block previous_class %}{% endblock %}
+
+{% block next_url %}{% url 'demo:teaching' %}{% endblock %}
+{% block next_class %}{% endblock %}
+
+{% block left_pane %}
+    <div style="padding: 20px;">
+        <h2>Concepts</h2>
+        <ul>
+            <li>Classification is separating objects into distinct classes</li>
+            <li>Classification can be done with neural nets, which can find complex patterns that humans cannot</li>  
+            <li>Neural nets train to find weights that disover patterns</li>        
+            <li>Similarity is measuring how close objects or concepts are to each other</li>
+            <li>Similarity can be measured through geometry (angles)</li>
+            <li>Neural nets can use similarity of outcomes to train weights, and find best matches via gradients</li>           
+            <li>AI uses similarity and neural nets to produce predictions which are human like</li>        
+        </ul>
+    </div>
+{% endblock %}
+
+{% block right_pane %}
+    <div style="padding: 20px;">
+        <h2>Terms</h2>
+        <ul>
+            <li>Classification</li>
+            <li>Neural net / Neurons / Weights / Hidden Layer</li>
+            <li>Likelihood (Probability)</li>
+            <li>Vectors</li>
+            <li>Encoding</li>   
+            <li>Similarity (Geometry)</li>
+        </ul>
+    </div>
+{% endblock %}
+

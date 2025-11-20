@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LGP AI Education{% endblock %}</title>
+    {% load static %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .nav-left, .nav-right {
+            flex: 1;
+        }
+        
+        .nav-right {
+            text-align: right;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            flex: 2;
+            margin: 0;
+        }
+        
+        .nav-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .nav-button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .nav-button.invisible {
+            visibility: hidden;
+        }
+        
+        .content-card {
+            background: transparent;
+            padding: 0;
+        }
+        
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-nav">
+            <div class="nav-left">
+                {% block previous_button %}
+                <a href="{% block previous_url %}#{% endblock %}" class="nav-button {% block previous_class %}invisible{% endblock %}">← Previous</a>
+                {% endblock %}
+            </div>
+            
+            <h1>{% block heading %}LGP AI Education{% endblock %}</h1>
+            
+            <div class="nav-right">
+                {% block next_button %}
+                <a href="{% block next_url %}#{% endblock %}" class="nav-button {% block next_class %}invisible{% endblock %}">Next →</a>
+                {% endblock %}
+            </div>
+        </div>
+        
+        <div class="content-card">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
