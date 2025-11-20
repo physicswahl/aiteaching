@@ -5,7 +5,7 @@ class NeuralNetworkComputation(Scene):
         # Student data - Matthew Walker
         student_name = "Matthew Walker"
         x1 = 7.3  # Math performance
-        x2 = 4.9  # Reading/Writing performance
+        x2 = 4.9  # Literacy performance
         is_eligible = False  # Matthew is not eligible for support
         
         # Network parameters (defaults from two_nodes)
@@ -35,7 +35,7 @@ class NeuralNetworkComputation(Scene):
         y_label = Text("Literacy", font_size=20).next_to(axes.y_axis, LEFT, buff=0.3).rotate(90 * DEGREES)
         
         self.play(Create(axes), Write(x_label), Write(y_label))
-        self.wait(0.4)
+        self.wait(0.1)
         
         # Actual student data from database
         students_data = [
@@ -67,7 +67,7 @@ class NeuralNetworkComputation(Scene):
                 matthew_dot = dot
         
         self.play(FadeIn(dots), run_time=3.0)
-        self.wait(2)
+        self.wait(1)
         
         # Legend
         legend = VGroup(
@@ -82,7 +82,7 @@ class NeuralNetworkComputation(Scene):
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.3).to_corner(UR, buff=0.5)
         
         self.play(FadeIn(legend))
-        self.wait(2)
+        self.wait(1)
         
         # Highlight Matthew Walker
         highlight_circle = Circle(radius=0.25, color=YELLOW, stroke_width=4).move_to(matthew_dot.get_center())
@@ -93,12 +93,12 @@ class NeuralNetworkComputation(Scene):
             matthew_dot.animate.scale(1.5),
             Write(matthew_label)
         )
-        self.wait(2)
+        self.wait(1)
         
         # Show coordinates being read (positioned off-screen initially, will appear on right)
         coord_display = VGroup(
             Text(f"Math Performance (x₁): {x1}", font_size=24, color=WHITE),
-            Text(f"Reading/Writing (x₂): {x2}", font_size=24, color=WHITE)
+            Text(f"Literacy (x₂): {x2}", font_size=24, color=WHITE)
         ).arrange(DOWN, aligned_edge=LEFT, buff=0.3).to_edge(RIGHT, buff=0.8).shift(UP * 0.5)
         
         # Draw lines to axes
@@ -124,7 +124,7 @@ class NeuralNetworkComputation(Scene):
             Write(x_tick_label),
             Write(y_tick_label)
         )
-        self.wait(2)
+        self.wait(0.5)
         
         # Shift graph to the left and show coordinates on the right
         graph_group = VGroup(
@@ -141,7 +141,7 @@ class NeuralNetworkComputation(Scene):
         
         # Show coordinates on the right side
         self.play(Write(coord_display))
-        self.wait(4)
+        self.wait(2)
         
         # Transition to neural network
         self.play(
@@ -207,19 +207,19 @@ class NeuralNetworkComputation(Scene):
         self.play(conn1.animate.set_color(YELLOW), run_time=1.0)
         self.play(Write(calc1))
         self.play(conn1.animate.set_color(GRAY), run_time=1.0)
-        self.wait(1.0)
+        self.wait(0.2)
         
         # Highlight second connection
         self.play(conn2.animate.set_color(YELLOW), run_time=1.0)
         self.play(Write(calc2))
         self.play(conn2.animate.set_color(GRAY), run_time=1.0)
-        self.wait(2)
+        self.wait(0.5)
         
         # Step 2: Sum the weighted inputs
         # Move step 1 calculations to the left side
         self.play(
             FadeOut(calc_title),
-            calculations.animate.scale(0.8).to_edge(LEFT, buff=0.5).shift(DOWN * 1)
+            calculations.animate.scale(0.6).to_edge(LEFT, buff=0.5).shift(DOWN * 1)
         )
         
         calc_title2 = Text("Step 2: Sum the weighted inputs", font_size=24, color=YELLOW)
@@ -269,9 +269,10 @@ class NeuralNetworkComputation(Scene):
         self.play(bias_label.animate.set_color(ORANGE), run_time=1.0)
         self.wait(3.0)
         
-        # Step 4: Classification
+        # Fade out Step 3
         self.play(FadeOut(calc_title3), FadeOut(bias_calc))
         
+        # Step 4: Classification
         calc_title4 = Text("Step 4: Classification", font_size=24, color=YELLOW)
         calc_title4.to_edge(DOWN, buff=1.5)
         self.play(Write(calc_title4))
@@ -298,7 +299,7 @@ class NeuralNetworkComputation(Scene):
         # Final summary box
         summary = VGroup(
             Text(f"{student_name}", font_size=28, color=WHITE),
-            Text(f"Math: {x1}, Reading/Writing: {x2}", font_size=22),
+            Text(f"Math: {x1}, Literacy: {x2}", font_size=22),
             Text(f"Network Output: {result:.2f}", font_size=22),
             Text(classification, font_size=24, color=class_color, weight=BOLD)
         ).arrange(DOWN, buff=0.3)

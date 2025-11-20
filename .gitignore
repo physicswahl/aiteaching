@@ -61,8 +61,6 @@ Thumbs.db
 
 # Model files (these are large, should be downloaded separately or stored in LFS)
 *.h5
-*.keras
-*.pkl
 *.joblib
 
 # Jupyter Notebook
