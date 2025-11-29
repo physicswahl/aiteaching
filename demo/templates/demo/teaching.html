@@ -10,6 +10,10 @@
 {% block next_url %}#{% endblock %}
 {% block next_class %}invisible{% endblock %}
 
+{% block next_button %}
+<button class="nav-button" onclick="showExportInstructions()" style="cursor: pointer; border: none;">Export to PowerPoint</button>
+{% endblock %}
+
 {% block left_pane %}
     <div style="padding: 20px;">
         <h2>Terms</h2>
@@ -18,7 +22,7 @@
             <li>Neural net / Neurons / Weights / Hidden Layer</li>
             <li>Likelihood (Probability)</li>
             <li>Vectors</li>
-            <li>Encoding</li>
+            <li>Encoding / Tokens</li>
             <li>Similarity (Geometry)</li>
             <li>Gradient</li>            
         </ul>
@@ -28,6 +32,42 @@
 {% block right_pane %}
     <div style="padding: 20px;">
         <h2>Teaching - How do we bring AI notions into the classroom</h2>
-        <p>Content for Teaching page - right pane</p>
+        <p>Exercise. In groups:</p>
+         <ul>
+            <li>Identify areas of the curriculum where students could make classifications or similarity arguments</li>
+            <li>Identify the inputs and the outputs of a classification</li>
+            <li>Identify dimensions on which students might evaluate similarity </li>
+            <li>Or any other concept where there are inputs, which influence a measure of success, and where we can tweak inputs to increase success </li>          
+            <li>Can games be useful platforms for teaching the above </li>
+        </ul>
+        <p>We'll do a feedback session at the end</p>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showExportInstructions() {
+    const instructions = `
+To generate a PowerPoint presentation of all slides:
+
+1. Make sure the Django dev server is running (python manage.py runserver)
+
+2. Open a terminal and run:
+   python generate_pptx.py
+
+3. The script will automatically capture all pages and create:
+   AI_Teaching_Presentation.pptx
+
+Configuration options in generate_pptx.py:
+- Set video timestamps (format: 'M:SS.CC')
+- Exclude specific pages
+- Customize page order
+
+Requirements (install if needed):
+pip install selenium pillow python-pptx webdriver-manager
+    `;
+    
+    alert(instructions);
+}
+</script>
 {% endblock %}
